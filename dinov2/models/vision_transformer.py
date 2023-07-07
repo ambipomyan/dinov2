@@ -356,3 +356,16 @@ def vit_giant2(patch_size=16, **kwargs):
         **kwargs,
     )
     return model
+
+###########################
+# vits14 + multi-channels #
+###########################
+def vit_small_multi_channel_simple(img_size=224, patch_size=14, in_chans=4, embed_dim=384, **kwargs):
+    model = DinoVisionTransformer(
+        img_size=img_size,
+        patch_size=patch_size,
+        in_chans=in_chans,
+        embed_dim=embed_dim,
+        **kwargs,
+    )
+    return model
