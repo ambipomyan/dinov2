@@ -1,7 +1,7 @@
 # This is ky branch for play
 ## changes
 1. dinov2/models/vision_transformer.py:360 - parsing vits model with 4 channels according to configs file
-2. dinov2/train/ssl_meta_arch.py      :51  - loading checkpoints from backbone and loading weights from blocks only
+2. dinov2/train/ssl_meta_arch.py:51 - loading checkpoints from backbone and loading weights from blocks only
 
 # DINOv2: Learning Robust Visual Features without Supervision
 
