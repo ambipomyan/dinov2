@@ -14,6 +14,10 @@ from torch.utils.data import Sampler
 from .datasets import ImageNet, ImageNet22k
 from .samplers import EpochSampler, InfiniteSampler, ShardedInfiniteSampler
 
+#########################################
+# import customized Dataset constructor #
+#########################################
+from mydataset import MyPKLDataset
 
 logger = logging.getLogger("dinov2")
 
@@ -64,6 +68,10 @@ def _parse_dataset_str(dataset_str: str):
 
     return class_, kwargs
 
+############################
+# load data from .pkl file #
+############################
+import numpy as np
 
 def make_dataset(
     *,
@@ -75,7 +83,7 @@ def make_dataset(
     Creates a dataset with the specified parameters.
 
     Args:
-        dataset_str: A dataset string description (e.g. ImageNet:split=TRAIN).
+        dataset_str: data_path for .pkl file
         transform: A transform to apply to images.
         target_transform: A transform to apply to targets.
 
@@ -84,8 +92,9 @@ def make_dataset(
     """
     logger.info(f'using dataset: "{dataset_str}"')
 
-    class_, kwargs = _parse_dataset_str(dataset_str)
-    dataset = class_(transform=transform, target_transform=target_transform, **kwargs)
+    #class_, kwargs = _parse_dataset_str(dataset_str)
+    #dataset = class_(transform=transform, target_transform=target_transform, **kwargs)
+    dataset = MyPKLDataset(dataset_str, transform)
 
     logger.info(f"# of dataset samples: {len(dataset):,d}")
 

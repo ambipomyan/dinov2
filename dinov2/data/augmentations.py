@@ -13,9 +13,12 @@ from .transforms import (
     make_normalize_transform,
 )
 
+########################################
+# import customized data augumentation #
+########################################
+from mydataset import MyTransform_v3
 
 logger = logging.getLogger("dinov2")
-
 
 class DataAugmentationDINO(object):
     def __init__(
@@ -41,6 +44,7 @@ class DataAugmentationDINO(object):
         logger.info(f"local_crops_size: {local_crops_size}")
         logger.info("###################################")
 
+        '''
         # random resized crop and flip
         self.geometric_augmentation_global = transforms.Compose(
             [
@@ -93,16 +97,29 @@ class DataAugmentationDINO(object):
         self.global_transfo1 = transforms.Compose([color_jittering, global_transfo1_extra, self.normalize])
         self.global_transfo2 = transforms.Compose([color_jittering, global_transfo2_extra, self.normalize])
         self.local_transfo = transforms.Compose([color_jittering, local_transfo_extra, self.normalize])
+        '''
+###########################################################
+# use MyTransform_v3 to replace transforms for PIL images #
+###########################################################
+        embed_map = {}
+        resize = 256
+        means = (0.5, 0.5, 0.5, 0.5)
+        stds = (0.25, 0.25, 0.25, 0.25)
+        device = 'cpu'
+
+        self.global_transfo1 = transforms.Compose([MyTransform_v3(embed_map, resize, global_crops_size, means, stds, device)])
+        self.global_transfo2 = transforms.Compose([MyTransform_v3(embed_map, resize, global_crops_size, means, stds, device)])
+        self.local_transfo = transforms.Compose([MyTransform_v3(embed_map, resize, local_crops_size, means, stds, device)])
 
     def __call__(self, image):
         output = {}
 
         # global crops:
-        im1_base = self.geometric_augmentation_global(image)
-        global_crop_1 = self.global_transfo1(im1_base)
+        #im1_base = self.geometric_augmentation_global(image)
+        #global_crop_1 = self.global_transfo1(im1_base)
+        global_crop_1 = self.global_transfo1(image)
 
-        im2_base = self.geometric_augmentation_global(image)
-        global_crop_2 = self.global_transfo2(im2_base)
+        global_crop_2 = self.global_transfo2(image)
 
         output["global_crops"] = [global_crop_1, global_crop_2]
 
@@ -111,7 +128,7 @@ class DataAugmentationDINO(object):
 
         # local crops:
         local_crops = [
-            self.local_transfo(self.geometric_augmentation_local(image)) for _ in range(self.local_crops_number)
+            self.local_transfo(image) for _ in range(self.local_crops_number)
         ]
         output["local_crops"] = local_crops
         output["offsets"] = ()
