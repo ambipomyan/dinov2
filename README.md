@@ -1,7 +1,7 @@
 # This is ky branch for play
 ## problems
 1. Can not run on cluster, something wrong with running in parallel
-2. Some problem with dimensions, get_attn_cat() in layers/block.py: 220
+2. Some problem with dimensions, get_attn_bias_and_cat() in layers/block.py: 220
 ## changes
 1. dinov2/models/vision_transformer.py:360 - parsing vits model with 4 channels according to configs file
 2. dinov2/train/ssl_meta_arch.py:51 - loading checkpoints from backbone and loading weights from blocks only
