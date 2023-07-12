@@ -1,6 +1,6 @@
 # This is ky branch for play
 ## problems
-1. Can not run on cluster, something wrong with running in parallel
+1. Can not run on cluster, something wrong with running in parallel, parepare_for_distributed_training() in mytrain.py: 308
 2. Some problem with dimensions, get_attn_bias_and_cat() in layers/block.py: 220
 ## changes
 1. dinov2/models/vision_transformer.py:360 - parsing vits model with 4 channels according to configs file
