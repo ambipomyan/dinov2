@@ -360,12 +360,41 @@ def vit_giant2(patch_size=16, **kwargs):
 ###########################
 # vits14 + multi-channels #
 ###########################
-def vit_small_multi_channel_simple(img_size=224, patch_size=14, in_chans=4, embed_dim=384, **kwargs):
+def vit_small_multi_channel_simple(img_size=224, patch_size=14, in_chans=5, embed_dim=384, **kwargs):
     model = DinoVisionTransformer(
         img_size=img_size,
         patch_size=patch_size,
         in_chans=in_chans,
         embed_dim=embed_dim,
+        **kwargs,
+    )
+    return model
+
+def vit_base_multi_channel(img_size=224, patch_size=14, in_chans=5, embed_dim=768, **kwargs):
+    model = DinoVisionTransformer(
+        img_size=img_size,
+        patch_size=patch_size,
+        in_chans=in_chans,
+        embed_dim=embed_dim,
+        depth=12,
+        num_heads=12,
+        mlp_ratio=4,
+        block_fn=partial(Block, attn_class=MemEffAttention),
+        **kwargs,
+    )
+    return model
+
+
+def vit_large_multi_channel(img_size=224, patch_size=14, in_chans=5, embed_dim=1024, depth=24 ,num_heads=16, **kwargs):
+    model = DinoVisionTransformer(
+        img_size=img_size,
+        patch_size=patch_size,
+        in_chans=in_chans,
+        embed_dim=embed_dim,
+        depth=depth,
+        num_heads=num_heads,
+        mlp_ratio=4,
+        block_fn=partial(Block, attn_class=MemEffAttention),
         **kwargs,
     )
     return model
