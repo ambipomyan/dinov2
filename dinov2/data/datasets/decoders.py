@@ -9,6 +9,8 @@ from typing import Any
 
 from PIL import Image
 
+from numpy import ndarray
+from tifffile import imread
 
 class Decoder:
     def decode(self) -> Any:
@@ -19,9 +21,12 @@ class ImageDataDecoder(Decoder):
     def __init__(self, image_data: bytes) -> None:
         self._image_data = image_data
 
-    def decode(self) -> Image:
+    #def decode(self) -> Image:
+    #    f = BytesIO(self._image_data)
+    #    return Image.open(f).convert(mode="RGB")
+    def decode(self) -> ndarray:
         f = BytesIO(self._image_data)
-        return Image.open(f).convert(mode="RGB")
+        return imread(f)
 
 
 class TargetDecoder(Decoder):

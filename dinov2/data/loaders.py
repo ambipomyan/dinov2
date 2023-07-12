@@ -11,7 +11,7 @@ from typing import Any, Callable, List, Optional, TypeVar
 import torch
 from torch.utils.data import Sampler
 
-from .datasets import ImageNet, ImageNet22k
+from .datasets import ImageNet, ImageNet22k, PkledDataset
 from .samplers import EpochSampler, InfiniteSampler, ShardedInfiniteSampler
 
 #########################################
@@ -63,6 +63,10 @@ def _parse_dataset_str(dataset_str: str):
             kwargs["split"] = ImageNet.Split[kwargs["split"]]
     elif name == "ImageNet22k":
         class_ = ImageNet22k
+    elif name == "PkledDataset":
+        class_ = PkledDataset
+        if "split" in kwargs:
+            kwargs["split"] = PkledDataset.Split[kwargs["split"]]
     else:
         raise ValueError(f'Unsupported dataset "{name}"')
 
@@ -92,9 +96,9 @@ def make_dataset(
     """
     logger.info(f'using dataset: "{dataset_str}"')
 
-    #class_, kwargs = _parse_dataset_str(dataset_str)
-    #dataset = class_(transform=transform, target_transform=target_transform, **kwargs)
-    dataset = MyDataset_v3(dataset_str, transform)
+    class_, kwargs = _parse_dataset_str(dataset_str)
+    dataset = class_(transform=transform, target_transform=target_transform, **kwargs)
+    #dataset = MyDataset_v3(dataset_str, transform)
 
     logger.info(f"# of dataset samples: {len(dataset):,d}")
 
