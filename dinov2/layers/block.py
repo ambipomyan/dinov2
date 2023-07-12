@@ -48,8 +48,7 @@ class Block(nn.Module):
         drop_path: float = 0.0,
         act_layer: Callable[..., nn.Module] = nn.GELU,
         norm_layer: Callable[..., nn.Module] = nn.LayerNorm,
-        #attn_class: Callable[..., nn.Module] = Attention,
-        attn_class: Callable[..., nn.Module] = MemEffAttention,
+        attn_class: Callable[..., nn.Module] = Attention,
         ffn_layer: Callable[..., nn.Module] = Mlp,
     ) -> None:
         super().__init__()
