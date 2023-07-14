@@ -34,9 +34,9 @@ class _Split(Enum):
         #    _Split.TRAIN: 1_281_167,
         #    _Split.VAL: 50_000,
         #    _Split.TEST: 100_000,
-            _Split.TRAIN: 100,
-            _Split.VAL: 100,
-            _Split.TEST: 100_000,
+            _Split.TRAIN: 1_000,
+            _Split.VAL: 1_000,
+            _Split.TEST: 1_000,
         }
         return split_lengths[self]
 
@@ -46,23 +46,20 @@ class _Split(Enum):
     def get_image_relpath(self, actual_index: int, class_id: Optional[str] = None) -> str:
         dirname = self.get_dirname(class_id)
         if self == _Split.TRAIN:
-            #basename = f"{class_id}_{actual_index}"
-            ## B-0001-Test-Ctrl-E01-D01.tiff
-            basename = f"{class_id}-{actual_index:04d}-Test-Ctrl-E01-D01"
+            basename = f"{class_id}_{actual_index}"
         else:  # self in (_Split.VAL, _Split.TEST):
-            basename = f"ILSVRC2012_{self.value}_{actual_index:08d}"
+            #basename = f"ILSVRC2012_{self.value}_{actual_index:08d}"
+            basename = f"SCCC_{self.value}_{actual_index:02d}"
         #return os.path.join(dirname, basename + ".JPEG")
-        return os.path.join(dirname, basename + ".tiff")
+        return os.path.join(dirname, basename + ".pkl")
 
     def parse_image_relpath(self, image_relpath: str) -> Tuple[str, int]:
         assert self != _Split.TEST
         dirname, filename = os.path.split(image_relpath)
         class_id = os.path.split(dirname)[-1]
         basename, _ = os.path.splitext(filename)
-        #actual_index = int(basename.split("_")[-1])
-        actual_index = int(basename.split("-")[1])
+        actual_index = int(basename.split("_")[-1])
         return class_id, actual_index
-
 
 class PkledDataset(ExtendedVisionDataset):
     Target = Union[_Target]
@@ -152,8 +149,10 @@ class PkledDataset(ExtendedVisionDataset):
 
         image_relpath = self.split.get_image_relpath(actual_index, class_id)
         image_full_path = os.path.join(self.root, image_relpath)
-        with open(image_full_path, mode="rb") as f:
-            image_data = f.read()
+        #with open(image_full_path, mode="rb") as f:
+        #    image_data = f.read()
+        with open(image_full_path, 'rb') as f:
+            image_data = pickle.load(f)
         return image_data
 
     def get_target(self, index: int) -> Optional[Target]:
@@ -207,10 +206,14 @@ class PkledDataset(ExtendedVisionDataset):
             labels = self._load_labels(labels_path)
 
             # NOTE: Using torchvision ImageFolder for consistency
-            from torchvision.datasets import ImageFolder
+## ImageFolder can not recognize pkl formart data
+## Use customized dataset instead
+            #from torchvision.datasets import ImageFolder
+            from mydataset import MyImageFolder
 
             dataset_root = os.path.join(self.root, split.get_dirname())
-            dataset = ImageFolder(dataset_root)
+            #dataset = ImageFolder(dataset_root)
+            dataset = MyImageFolder(dataset_root)
             sample_count = len(dataset)
             max_class_id_length, max_class_name_length = -1, -1
             for sample in dataset.samples:
