@@ -34,9 +34,9 @@ class _Split(Enum):
         #    _Split.TRAIN: 1_281_167,
         #    _Split.VAL: 50_000,
         #    _Split.TEST: 100_000,
-            _Split.TRAIN: 1_000,
-            _Split.VAL: 1_000,
-            _Split.TEST: 1_000,
+            _Split.TRAIN: 1,
+            _Split.VAL: 1,
+            _Split.TEST: 1,
         }
         return split_lengths[self]
 

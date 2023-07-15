@@ -10,7 +10,8 @@ from typing import Any
 from PIL import Image
 
 from numpy import ndarray
-from tifffile import imread
+
+import pickle
 
 class Decoder:
     def decode(self) -> Any:
@@ -26,7 +27,7 @@ class ImageDataDecoder(Decoder):
     #    return Image.open(f).convert(mode="RGB")
     def decode(self) -> ndarray:
         f = BytesIO(self._image_data)
-        return imread(f)
+        return pickle.load(f)
 
 
 class TargetDecoder(Decoder):
