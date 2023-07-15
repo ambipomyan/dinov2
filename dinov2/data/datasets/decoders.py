@@ -25,9 +25,10 @@ class ImageDataDecoder(Decoder):
     #def decode(self) -> Image:
     #    f = BytesIO(self._image_data)
     #    return Image.open(f).convert(mode="RGB")
-    def decode(self) -> ndarray:
+    def decode(self, idx) -> ndarray:
         f = BytesIO(self._image_data)
-        return pickle.load(f)
+        full_img = pickle.load(f)
+        return full_img[idx]
 
 
 class TargetDecoder(Decoder):
