@@ -34,9 +34,9 @@ class _Split(Enum):
         #    _Split.TRAIN: 1_281_167,
         #    _Split.VAL: 50_000,
         #    _Split.TEST: 100_000,
-            _Split.TRAIN: 1,
-            _Split.VAL: 1,
-            _Split.TEST: 1,
+            _Split.TRAIN: 1_000,
+            _Split.VAL: 1_000,
+            _Split.TEST: 1_000,
         }
         return split_lengths[self]
 
@@ -46,7 +46,7 @@ class _Split(Enum):
     def get_image_relpath(self, actual_index: int, class_id: Optional[str] = None) -> str:
         dirname = self.get_dirname(class_id)
         if self == _Split.TRAIN:
-            basename = f"{class_id}_{actual_index}"
+            basename = f"{class_id}_{actual_index:02d}"
         else:  # self in (_Split.VAL, _Split.TEST):
             #basename = f"ILSVRC2012_{self.value}_{actual_index:08d}"
             basename = f"SCCC_{self.value}_{actual_index:02d}"
@@ -149,10 +149,8 @@ class PkledDataset(ExtendedVisionDataset):
 
         image_relpath = self.split.get_image_relpath(actual_index, class_id)
         image_full_path = os.path.join(self.root, image_relpath)
-        #with open(image_full_path, mode="rb") as f:
-        #    image_data = f.read()
-        with open(image_full_path, 'rb') as f:
-            image_data = pickle.load(f)
+        with open(image_full_path, mode="rb") as f:
+            image_data = f.read()
         return image_data
 
     def get_target(self, index: int) -> Optional[Target]:

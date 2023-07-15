@@ -103,8 +103,8 @@ class DataAugmentationDINO(object):
 ###########################################################
         embed_map = {}
         resize = 256
-        means = (0.5, 0.5, 0.5, 0.5, 0.5)
-        stds = (0.25, 0.25, 0.25, 0.25, 0.5)
+        means = (0.5, 0.5, 0.5, 0.5)
+        stds = (0.25, 0.25, 0.25, 0.5)
         device = 'cpu'
 
         self.global_transfo1 = transforms.Compose([MyTransform_v3(embed_map, resize, global_crops_size, means, stds, device)])
