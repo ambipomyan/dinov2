@@ -18,6 +18,7 @@ import numpy as np
 
 from .extended import ExtendedVisionDataset
 
+import pickle
 
 logger = logging.getLogger("dinov2")
 _Target = int
@@ -34,7 +35,7 @@ class _Split(Enum):
         #    _Split.TRAIN: 1_281_167,
         #    _Split.VAL: 50_000,
         #    _Split.TEST: 100_000,
-            _Split.TRAIN: 1_000,
+            _Split.TRAIN: 298_464,
             _Split.VAL: 1_000,
             _Split.TEST: 1_000,
         }
@@ -45,18 +46,20 @@ class _Split(Enum):
 
     def get_image_relpath(self, actual_index: int, class_id: Optional[str] = None) -> str:
         dirname = self.get_dirname(class_id)
-        if self == _Split.TRAIN:
-            basename = f"{class_id}_{actual_index:02d}"
-        else:  # self in (_Split.VAL, _Split.TEST):
+        #if self == _Split.TRAIN:
+        #    basename = f"{class_id}_{actual_index}"
+        #else:  # self in (_Split.VAL, _Split.TEST):
             #basename = f"ILSVRC2012_{self.value}_{actual_index:08d}"
-            basename = f"SCCC_{self.value}_{actual_index:02d}"
         #return os.path.join(dirname, basename + ".JPEG")
-        return os.path.join(dirname, basename + ".pkl")
+        basename = f"{class_id}_{actual_index}"
+
+        return os.path.join(dirname, basename + "")
 
     def parse_image_relpath(self, image_relpath: str) -> Tuple[str, int]:
         assert self != _Split.TEST
         dirname, filename = os.path.split(image_relpath)
-        class_id = os.path.split(dirname)[-1]
+        #class_id = os.path.split(dirname)[-1]
+        class_id = filename.split("_")[0] + "_" + filename.split("_")[1]
         basename, _ = os.path.splitext(filename)
         actual_index = int(basename.split("_")[-1])
         return class_id, actual_index
@@ -82,6 +85,18 @@ class PkledDataset(ExtendedVisionDataset):
         self._entries = None
         self._class_ids = None
         self._class_names = None
+
+#################
+# load pkl file #
+#################
+        self.imgs=[]
+        curr_root = os.path.join(root, self._split.value)
+        for file_name in os.listdir(curr_root):
+              curr_full_file_name = os.path.join(curr_root, file_name)
+              with open(curr_full_file_name, 'rb') as f:
+                  tmps = pickle.load(f)
+                  for tmp in tmps:
+                      self.imgs.append(tmp)
 
     @property
     def split(self) -> "PkledDataset.Split":
@@ -149,8 +164,9 @@ class PkledDataset(ExtendedVisionDataset):
 
         image_relpath = self.split.get_image_relpath(actual_index, class_id)
         image_full_path = os.path.join(self.root, image_relpath)
-        with open(image_full_path, mode="rb") as f:
-            image_data = f.read()
+        #with open(image_full_path, mode="rb") as f:
+        #    image_data = f.read()
+        image_data = self.imgs[index]
         return image_data
 
     def get_target(self, index: int) -> Optional[Target]:
@@ -204,8 +220,6 @@ class PkledDataset(ExtendedVisionDataset):
             labels = self._load_labels(labels_path)
 
             # NOTE: Using torchvision ImageFolder for consistency
-## ImageFolder can not recognize pkl formart data
-## Use customized dataset instead
             #from torchvision.datasets import ImageFolder
             from mydataset import MyImageFolder
 
