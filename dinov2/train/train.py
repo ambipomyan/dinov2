@@ -153,7 +153,7 @@ def do_train(cfg, model, resume=False):
 
     start_iter = checkpointer.resume_or_load(cfg.MODEL.WEIGHTS, resume=resume).get("iteration", -1) + 1
 
-    OFFICIAL_EPOCH_LENGTH = 50 #cfg.train.OFFICIAL_EPOCH_LENGTH
+    OFFICIAL_EPOCH_LENGTH = cfg.train.OFFICIAL_EPOCH_LENGTH
     max_iter = cfg.optim.epochs * OFFICIAL_EPOCH_LENGTH
 
     periodic_checkpointer = PeriodicCheckpointer(
