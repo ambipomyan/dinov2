@@ -14,11 +14,6 @@ from torch.utils.data import Sampler
 from .datasets import ImageNet, ImageNet22k, PkledDataset
 from .samplers import EpochSampler, InfiniteSampler, ShardedInfiniteSampler
 
-#########################################
-# import customized Dataset constructor #
-#########################################
-from mydataset import MyDataset_v3
-
 logger = logging.getLogger("dinov2")
 
 
@@ -98,7 +93,6 @@ def make_dataset(
 
     class_, kwargs = _parse_dataset_str(dataset_str)
     dataset = class_(transform=transform, target_transform=target_transform, **kwargs)
-    #dataset = MyDataset_v3(dataset_str, transform)
 
     logger.info(f"# of dataset samples: {len(dataset):,d}")
 
