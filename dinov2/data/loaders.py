@@ -11,8 +11,10 @@ from typing import Any, Callable, List, Optional, TypeVar
 import torch
 from torch.utils.data import Sampler
 
-from .datasets import ImageNet, ImageNet22k, PkledDataset
+from .datasets import ImageNet, ImageNet22k, PkledDataset, TiffDataset
 from .samplers import EpochSampler, InfiniteSampler, ShardedInfiniteSampler
+
+import numpy as np
 
 logger = logging.getLogger("dinov2")
 
@@ -67,10 +69,6 @@ def _parse_dataset_str(dataset_str: str):
 
     return class_, kwargs
 
-############################
-# load data from .pkl file #
-############################
-import numpy as np
 
 def make_dataset(
     *,
@@ -92,6 +90,62 @@ def make_dataset(
     logger.info(f'using dataset: "{dataset_str}"')
 
     class_, kwargs = _parse_dataset_str(dataset_str)
+    dataset = class_(transform=transform, target_transform=target_transform, **kwargs)
+
+    logger.info(f"# of dataset samples: {len(dataset):,d}")
+
+    # Aggregated datasets do not expose (yet) these attributes, so add them.
+    if not hasattr(dataset, "transform"):
+        setattr(dataset, "transform", transform)
+    if not hasattr(dataset, "target_transform"):
+        setattr(dataset, "target_transform", target_transform)
+
+    return dataset
+
+############################
+# load data from tiff file #
+############################
+def _parse_tiff_dataset_str(dataset_str: str):
+    tokens = dataset_str.split(":")
+
+    name = tokens[0]
+    kwargs = {}
+
+    for token in tokens[1:]:
+        key, value = token.split("=")
+        assert key in ("root", "extra", "split", "seg", "names", "picks", "size")
+        kwargs[key] = value
+
+    if name == "TiffDataset":
+        class_ = TiffDataset
+        if "split" in kwargs:
+            kwargs["split"] = TiffDataset.Split[kwargs["split"]]
+    else:
+        raise ValueError(f'Unsupported dataset "{name}"')
+
+    return class_, kwargs
+
+
+def make_tiff_dataset(
+    *,
+    dataset_str: str,
+    transform: Optional[Callable] = None,
+    target_transform: Optional[Callable] = None,
+):
+    """
+    Creates a dataset with the specified parameters.
+
+    Args:
+        dataset_str: data_path for .pkl file
+        transform: A transform to apply to images.
+        target_transform: A transform to apply to targets.
+
+    Returns:
+        The created dataset.
+    """
+    logger.info(f'using dataset: "{dataset_str}"')
+
+    class_, kwargs = _parse_tiff_dataset_str(dataset_str)
     dataset = class_(transform=transform, target_transform=target_transform, **kwargs)
 
     logger.info(f"# of dataset samples: {len(dataset):,d}")
