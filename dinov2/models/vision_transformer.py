@@ -398,3 +398,17 @@ def vit_large_multi_channel(img_size=224, patch_size=14, in_chans=4, embed_dim=1
         **kwargs,
     )
     return model
+
+def vit_base_CODEX(img_size=224, patch_size=14, in_chans=24, embed_dim=768, **kwargs):
+    model = DinoVisionTransformer(
+        img_size=img_size,
+        patch_size=patch_size,
+        in_chans=in_chans,
+        embed_dim=embed_dim,
+        depth=12,
+        num_heads=12,
+        mlp_ratio=4,
+        block_fn=partial(Block, attn_class=MemEffAttention),
+        **kwargs,
+    )
+    return model
