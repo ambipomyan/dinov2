@@ -40,7 +40,8 @@ class _Split(Enum):
         #    _Split.TRAIN: 1_281_167,
         #    _Split.VAL: 50_000,
         #    _Split.TEST: 100_000,
-            _Split.TRAIN: 63_425,
+            #_Split.TRAIN: 63_425,
+            _Split.TRAIN: 149_425, # 63_425 + 86_000
             _Split.VAL: 63_425,
             _Split.TEST: 63_425,
         }
@@ -99,29 +100,37 @@ class TiffDataset(ExtendedVisionDataset):
 # load tiff file #
 ##################
         ## keys
-        keys = get_keys_from_txt(names, picks)
+        keys = []
+        full_channels = os.listdir(names)
+        picked_channels = os.listdir(picks)
+        for c in range(len(full_channels)):
+            full = os.path.join(names, full_channels[c])
+            picked = os.path.join(picks, picked_channels[c])
+            key = get_keys_from_txt(full, picked)
+            keys.append(key)
         ## seg
         self.seg = seg
         ## window
         w_x = int(size) # cast to int
         w_y = int(size)
-        ## data - TODO use data folder for multi-files training
+        ## csvs
         xs = []
         ys = []
-        df = pd.read_csv(seg, usecols=['X_centroid','Y_centroid'])
-        x = df['X_centroid'].to_numpy().astype(int)
-        y = df['Y_centroid'].to_numpy().astype(int)
-        xs.append(x)
-        ys.append(y)
-        self.data = xs
-        self.transform = transform
+        curr_seg = seg
+        for csv_name in os.listdir(curr_seg):
+            curr_full_csv_name = os.path.join(curr_seg, csv_name)
+            df = pd.read_csv(curr_full_csv_name, usecols=['X_centroid','Y_centroid'])
+            x = df['X_centroid'].to_numpy().astype(int)
+            y = df['Y_centroid'].to_numpy().astype(int)
+            xs.append(x)
+            ys.append(y)
         ## imgs
         imgs = []
         curr_root = os.path.join(root, self._split.value)
         for i, file_name in enumerate(os.listdir(curr_root)):
             curr_full_file_name = os.path.join(curr_root, file_name)
             with open(curr_full_file_name, 'rb') as f:
-                tmp = imread(f, key=keys)
+                tmp = imread(f, key=keys[i])
                 page = tmp[0]
                 height, width = page.shape
                 ## get indexes
