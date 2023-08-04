@@ -40,10 +40,12 @@ class _Split(Enum):
         #    _Split.TRAIN: 1_281_167,
         #    _Split.VAL: 50_000,
         #    _Split.TEST: 100_000,
-            #_Split.TRAIN: 63_425,
-            _Split.TRAIN: 149_425, # 63_425 + 86_000
-            _Split.VAL: 63_425,
-            _Split.TEST: 63_425,
+            #_Split.TRAIN: 149_425, # 63_425 + 86_000
+            #_Split.VAL: 63_425,
+            #_Split.TEST: 63_425,
+            _Split.TRAIN: 464_920, # 298_464 + 166_456
+            _Split.VAL: 298_464,
+            _Split.TEST: 298_464,
         }
         return split_lengths[self]
 
@@ -103,6 +105,10 @@ class TiffDataset(ExtendedVisionDataset):
         keys = []
         full_channels = os.listdir(names)
         picked_channels = os.listdir(picks)
+# order
+        full_channels.sort(key=lambda x: int(x.split(".")[0].split("_")[1]))
+        picked_channels.sort(key=lambda x: int(x.split(".")[0].split("_")[1]))
+
         for c in range(len(full_channels)):
             full = os.path.join(names, full_channels[c])
             picked = os.path.join(picks, picked_channels[c])
@@ -117,7 +123,11 @@ class TiffDataset(ExtendedVisionDataset):
         xs = []
         ys = []
         curr_seg = seg
-        for csv_name in os.listdir(curr_seg):
+        curr_csv_names = os.listdir(curr_seg)
+# order
+        curr_csv_names.sort(key=lambda x: int(x.split(".")[0].split("_")[1]))
+
+        for csv_name in curr_csv_names:
             curr_full_csv_name = os.path.join(curr_seg, csv_name)
             df = pd.read_csv(curr_full_csv_name, usecols=['X_centroid','Y_centroid'])
             x = df['X_centroid'].to_numpy().astype(int)
@@ -127,7 +137,12 @@ class TiffDataset(ExtendedVisionDataset):
         ## imgs
         imgs = []
         curr_root = os.path.join(root, self._split.value)
-        for i, file_name in enumerate(os.listdir(curr_root)):
+        curr_file_names = os.listdir(curr_root)
+# order
+        curr_file_names.sort(key=lambda x: int(x.split(".")[0].split("_")[1]))
+        #print(curr_file_names)
+
+        for i, file_name in enumerate(curr_file_names):
             curr_full_file_name = os.path.join(curr_root, file_name)
             with open(curr_full_file_name, 'rb') as f:
                 tmp = imread(f, key=keys[i])
