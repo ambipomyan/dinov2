@@ -11,7 +11,7 @@ from typing import Any, Callable, List, Optional, TypeVar
 import torch
 from torch.utils.data import Sampler
 
-from .datasets import ImageNet, ImageNet22k, PkledDataset, TiffDataset
+from .datasets import ImageNet, ImageNet22k, PkledDataset, TiffDataset, HEDataset
 from .samplers import EpochSampler, InfiniteSampler, ShardedInfiniteSampler
 
 import numpy as np
@@ -169,7 +169,7 @@ def _parse_he_dataset_str(dataset_str: str):
 
     for token in tokens[1:]:
         key, value = token.split("=")
-        assert key in ("root", "extra", "split", "seg", "names", "picks", "size")
+        assert key in ("root", "extra", "split", "seg", "names", "picks", "size", "adds")
         kwargs[key] = value
 
     if name == "ImageNet":
