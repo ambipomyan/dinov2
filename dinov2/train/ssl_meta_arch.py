@@ -62,6 +62,7 @@ class SSLMetaArch(nn.Module):
             #student_backbone.load_state_dict(chkpt_blks_renamed)
             #student_backbone.load_state_dict(chkpt_blks_renamed, strict=False)
             #student_backbone.load_state_dict(chkpt_blks)
+#TODO: load weights to state_dict
             student_backbone.load_state_dict(chkpt_blks, strict=False)
 
         self.embed_dim = embed_dim

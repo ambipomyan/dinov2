@@ -13,7 +13,7 @@ from functools import partial
 from fvcore.common.checkpoint import PeriodicCheckpointer
 import torch
 
-from dinov2.data import SamplerType, make_data_loader, make_dataset, make_tiff_dataset
+from dinov2.data import SamplerType, make_data_loader, make_dataset, make_tiff_dataset, make_he_dataset
 from dinov2.data import collate_data_and_cast, DataAugmentationDINO, MaskingGenerator
 import dinov2.distributed as distributed
 from dinov2.fsdp import FSDPCheckpointer
@@ -191,12 +191,19 @@ def do_train(cfg, model, resume=False):
     )
 
     # setup data loader
-
+    '''
     dataset = make_tiff_dataset(
         dataset_str=cfg.train.dataset_path,
         transform=data_transform,
         target_transform=lambda _: (),
     )
+    '''
+    dataset = make_he_dataset(
+        dataset_str=cfg.train.dataset_path,
+        transform=data_transform,
+        target_transform=lambda _: (),
+    )
+
     # sampler_type = SamplerType.INFINITE
     sampler_type = SamplerType.SHARDED_INFINITE
     data_loader = make_data_loader(

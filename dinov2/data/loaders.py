@@ -158,6 +158,76 @@ def make_tiff_dataset(
 
     return dataset
 
+#################################
+# load data from HE + tiff file #
+#################################
+def _parse_he_dataset_str(dataset_str: str):
+    tokens = dataset_str.split(":")
+
+    name = tokens[0]
+    kwargs = {}
+
+    for token in tokens[1:]:
+        key, value = token.split("=")
+        assert key in ("root", "extra", "split", "seg", "names", "picks", "size")
+        kwargs[key] = value
+
+    if name == "ImageNet":
+        class_ = ImageNet
+        if "split" in kwargs:
+            kwargs["split"] = ImageNet.Split[kwargs["split"]]
+    elif name == "ImageNet22k":
+        class_ = ImageNet22k
+    elif name == "PkledDataset":
+        class_ = PkledDataset
+        if "split" in kwargs:
+            kwargs["split"] = PkledDataset.Split[kwargs["split"]]
+    elif name == "TiffDataset":
+        class_ = TiffDataset
+        if "split" in kwargs:
+            kwargs["split"] = TiffDataset.Split[kwargs["split"]]
+    elif name == "HEDataset":
+        class_ = HEDataset
+        if "split" in kwargs:
+            kwargs["split"] = HEDataset.Split[kwargs["split"]]
+    else:
+        raise ValueError(f'Unsupported dataset "{name}"')
+
+    return class_, kwargs
+
+
+def make_he_dataset(
+    *,
+    dataset_str: str,
+    transform: Optional[Callable] = None,
+    target_transform: Optional[Callable] = None,
+):
+    """
+    Creates a dataset with the specified parameters.
+
+    Args:
+        dataset_str: data_path for .pkl file
+        transform: A transform to apply to images.
+        target_transform: A transform to apply to targets.
+
+    Returns:
+        The created dataset.
+    """
+    logger.info(f'using dataset: "{dataset_str}"')
+
+    class_, kwargs = _parse_he_dataset_str(dataset_str)
+    dataset = class_(transform=transform, target_transform=target_transform, **kwargs)
+
+    logger.info(f"# of dataset samples: {len(dataset):,d}")
+
+    # Aggregated datasets do not expose (yet) these attributes, so add them.
+    if not hasattr(dataset, "transform"):
+        setattr(dataset, "transform", transform)
+    if not hasattr(dataset, "target_transform"):
+        setattr(dataset, "target_transform", target_transform)
+
+    return dataset
+
 
 def _make_sampler(
     *,
