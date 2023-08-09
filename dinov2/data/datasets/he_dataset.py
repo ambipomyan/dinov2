@@ -86,6 +86,7 @@ class HEDataset(ExtendedVisionDataset):
         names: str,
         picks: str,
         size: int,
+        adds: str,
         transforms: Optional[Callable] = None,
         transform: Optional[Callable] = None,
         target_transform: Optional[Callable] = None,
