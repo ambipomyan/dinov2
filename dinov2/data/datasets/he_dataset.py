@@ -40,12 +40,12 @@ class _Split(Enum):
         #    _Split.TRAIN: 1_281_167,
         #    _Split.VAL: 50_000,
         #    _Split.TEST: 100_000,
-            #_Split.TRAIN: 149_425, # 63_425 + 86_000
-            #_Split.VAL: 63_425,
-            #_Split.TEST: 63_425,
-            _Split.TRAIN: 2_155_046, # 298_464 + 166_456 + ...
-            _Split.VAL: 298_464,
-            _Split.TEST: 362_818, # 166456 + 196362
+            _Split.TRAIN: 149_425, # 63_425 + 86_000
+            _Split.VAL: 63_425,
+            _Split.TEST: 63_425,
+            #_Split.TRAIN: 2_155_046, # 298_464 + 166_456 + ...
+            #_Split.VAL: 298_464,
+            #_Split.TEST: 362_818, # 166456 + 196362
         }
         return split_lengths[self]
 
@@ -187,9 +187,14 @@ class HEDataset(ExtendedVisionDataset):
             for i, file_name in enumerate(curr_adds_file_names):
                 curr_full_file_name = os.path.join(curr_adds, file_name)
                 with open(curr_full_file_name, 'rb') as f:
-                    tmp = imread(f)
-                    page = tmp[0]
-                    height, width = page.shape
+                    tmp_hwc = imread(f)
+## tmp: RGBA image, hwc -> chw
+                    channels = tmp_hwc.shape[2]
+                    height = tmp_hwc.shape[0]
+                    width = tmp_hwc.shape[1]
+                    tmp = np.transpose(tmp_hwc, (2, 0, 1))
+                    #page = tmp[0]
+                    #height, width = page.shape
                     ## get indexes
                     for index in range(len(xs[i])):
                         ori_x = xs[i][index]
@@ -213,10 +218,6 @@ class HEDataset(ExtendedVisionDataset):
 #########
 # merge #
 #########
-            #print(2*w_x)
-            #print(len(imgs_adds))
-            #print(len(imgs))
-
             self.imgs = np.concatenate((imgs_adds, imgs), axis=1)
 
     @property
