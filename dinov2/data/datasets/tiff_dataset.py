@@ -43,9 +43,9 @@ class _Split(Enum):
             #_Split.TRAIN: 149_425, # 63_425 + 86_000
             #_Split.VAL: 63_425,
             #_Split.TEST: 63_425,
-            _Split.TRAIN: 464_920, # 298_464 + 166_456
+            _Split.TRAIN: 2_155_046, # 298_464 + 166_456 + ...
             _Split.VAL: 298_464,
-            _Split.TEST: 298_464,
+            _Split.TEST: 362_818, # 166456 + 196362
         }
         return split_lengths[self]
 
@@ -117,8 +117,8 @@ class TiffDataset(ExtendedVisionDataset):
         ## seg
         self.seg = seg
         ## window
-        w_x = int(size) # cast to int
-        w_y = int(size)
+        w_x = int(size//2) # cast to int
+        w_y = int(size//2)
         ## csvs
         xs = []
         ys = []
