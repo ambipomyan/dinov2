@@ -117,8 +117,8 @@ class TiffDataset(ExtendedVisionDataset):
         ## seg
         self.seg = seg
         ## window
-        w_x = int(size//2) # cast to int
-        w_y = int(size//2)
+        w_x = int(size) // 2 # cast to int
+        w_y = int(size) // 2
         ## csvs
         xs = []
         ys = []
