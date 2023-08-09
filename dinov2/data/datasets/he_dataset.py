@@ -118,8 +118,8 @@ class HEDataset(ExtendedVisionDataset):
         ## seg
         self.seg = seg
         ## window
-        w_x = int(size) # cast to int
-        w_y = int(size)
+        w_x = int(size//2) # cast to int
+        w_y = int(size//2)
         ## csvs
         xs = []
         ys = []
@@ -157,11 +157,67 @@ class HEDataset(ExtendedVisionDataset):
                     lower = min(ori_y + w_y, height)
                     left  = max(ori_x - w_x, 0)
                     right = min(ori_x + w_x, width)
+                    ## make sure that each of the inputs are of the same size
+                    if upper == 0:
+                        lower = 2 * w_y
+                    if lower == height:
+                        upper = height - 2*w_y
+                    if left == 0:
+                        right = 2 * w_x
+                    if right == width:
+                        left = width - 2*w_x
                     ## get images
                     img = tmp[:, upper:lower, left:right]
                     imgs.append(img)
 
-        self.imgs = imgs
+        if not(adds):
+            self.imgs = imgs
+        else:
+################
+# load HE file #
+################
+            ## imgs_adds
+            imgs_adds = []
+            curr_adds = os.path.join(adds, self._split.value)
+            curr_adds_file_names = os.listdir(curr_adds)
+# order
+            curr_adds_file_names.sort(key=lambda x: int(x.split(".")[0].split("_")[1]))
+            #print(curr_adds_file_names)
+
+            for i, file_name in enumerate(curr_adds_file_names):
+                curr_full_file_name = os.path.join(curr_adds, file_name)
+                with open(curr_full_file_name, 'rb') as f:
+                    tmp = imread(f)
+                    page = tmp[0]
+                    height, width = page.shape
+                    ## get indexes
+                    for index in range(len(xs[i])):
+                        ori_x = xs[i][index]
+                        ori_y = ys[i][index]
+                        upper = max(ori_y - w_y, 0)
+                        lower = min(ori_y + w_y, height)
+                        left  = max(ori_x - w_x, 0)
+                        right = min(ori_x + w_x, width)
+                        ## make sure that each of the inputs are of the same size
+                        if upper == 0:
+                            lower = 2 * w_y
+                        if lower == height:
+                            upper = height - 2*w_y
+                        if left == 0:
+                            right = 2 * w_x
+                        if right == width:
+                            left = width - 2*w_x
+                        ## get images
+                        img = tmp[:, upper:lower, left:right]
+                        imgs_adds.append(img)
+#########
+# merge #
+#########
+            #print(2*w_x)
+            #print(len(imgs_adds))
+            #print(len(imgs))
+
+            self.imgs = np.concatenate((imgs_adds, imgs), axis=1)
 
     @property
     def split(self) -> "HEDataset.Split":
