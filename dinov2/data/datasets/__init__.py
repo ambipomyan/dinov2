@@ -9,3 +9,4 @@ from .image_net_22k import ImageNet22k
 from .pkled_dataset import PkledDataset
 from .tiff_dataset import TiffDataset
 from .he_dataset import HEDataset
+from .eval_dataset import EVALDataset

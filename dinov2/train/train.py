@@ -191,6 +191,11 @@ def do_train(cfg, model, resume=False):
     )
 
     # setup data loader
+    dataset = make_dataset(
+        dataset_str=cfg.train.dataset_path,
+        transform=data_transform,
+        target_transform=lambda _: (),
+    )
     '''
     dataset = make_tiff_dataset(
         dataset_str=cfg.train.dataset_path,
@@ -198,11 +203,13 @@ def do_train(cfg, model, resume=False):
         target_transform=lambda _: (),
     )
     '''
+    '''
     dataset = make_he_dataset(
         dataset_str=cfg.train.dataset_path,
         transform=data_transform,
         target_transform=lambda _: (),
     )
+    '''
 
     # sampler_type = SamplerType.INFINITE
     sampler_type = SamplerType.SHARDED_INFINITE

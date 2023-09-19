@@ -11,7 +11,7 @@ from typing import Any, Callable, List, Optional, TypeVar
 import torch
 from torch.utils.data import Sampler
 
-from .datasets import ImageNet, ImageNet22k, PkledDataset, TiffDataset, HEDataset
+from .datasets import ImageNet, ImageNet22k, PkledDataset, EVALDataset, TiffDataset, HEDataset
 from .samplers import EpochSampler, InfiniteSampler, ShardedInfiniteSampler
 
 import numpy as np
@@ -64,6 +64,10 @@ def _parse_dataset_str(dataset_str: str):
         class_ = PkledDataset
         if "split" in kwargs:
             kwargs["split"] = PkledDataset.Split[kwargs["split"]]
+    elif name == "EVALDataset":
+        class_ = EVALDataset
+        if "split" in kwargs:
+            kwargs["split"] = EVALDataset.Split[kwargs["split"]]
     else:
         raise ValueError(f'Unsupported dataset "{name}"')
 
