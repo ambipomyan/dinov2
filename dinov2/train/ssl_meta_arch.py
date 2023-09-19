@@ -86,7 +86,11 @@ class SSLMetaArch(nn.Module):
             ## reshape
             ### 1x1370x768 -> 1285x768
             tmp_2d = chkpt_pembs['pos_embed'].squeeze(0)
-            tmp_3d = tmp_2d[:-res, :].reshape((mul, pos_embed_model_size[1], pos_embed_model_size[2]))
+            #tmp_3d = tmp_2d[:-res, :].reshape((mul, pos_embed_model_size[1], pos_embed_model_size[2]))
+            if res != 0:
+                tmp_3d = tmp_2d[:-res, :].reshape((mul, pos_embed_model_size[1], pos_embed_model_size[2]))
+            else:
+                tmp_3d = tmp_2d.reshape((mul, pos_embed_model_size[1], pos_embed_model_size[2]))
             ## comput mean value
             ### 5x257x768 -> 1x257x768
             new_state_dict['pos_embed'] = torch.mean(tmp_3d, dim=0, keepdim=True)
