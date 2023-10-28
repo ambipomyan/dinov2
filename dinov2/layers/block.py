@@ -8,6 +8,7 @@
 #   https://github.com/facebookresearch/dino/blob/master/vision_transformer.py
 #   https://github.com/rwightman/pytorch-image-models/tree/master/timm/layers/patch_embed.py
 
+'''
 import logging
 from typing import Callable, List, Any, Tuple, Dict
 
@@ -18,11 +19,22 @@ from .attention import Attention, MemEffAttention
 from .drop_path import DropPath
 from .layer_scale import LayerScale
 from .mlp import Mlp
+'''
+import logging
+import os
+from typing import Callable, List, Any, Tuple, Dict
+import warnings
+import torch
+from torch import nn, Tensor
+from .attention import Attention, MemEffAttention
+from .drop_path import DropPath
+from .layer_scale import LayerScale
+from .mlp import Mlp
 
 
 logger = logging.getLogger("dinov2")
 
-
+'''
 try:
     from xformers.ops import fmha
     from xformers.ops import scaled_index_add, index_select_cat
@@ -31,7 +43,40 @@ try:
 except ImportError:
     logger.warning("xFormers not available")
     XFORMERS_AVAILABLE = False
+'''
+XFORMERS_ENABLED = os.environ.get("XFORMERS_DISABLED") is None
+try:
+    if XFORMERS_ENABLED:
+        from xformers.ops import fmha, scaled_index_add, index_select_cat
 
+        from xformers.ops import scaled_index_add as _scaled_index_add, index_select_cat as _index_select_cat
+
+        def scaled_index_add(input, index, source, scaling, alpha):
+            is_proper_embed_dim = input.shape[-1] % 256 == 0
+            is_float16 = input.dtype == torch.half
+            if is_proper_embed_dim and is_float16:
+                return _scaled_index_add(input, index, source, scaling, alpha)
+            else:
+                return torch.index_add(input, dim=0, source=scaling * source, index=index, alpha=alpha)
+
+
+        def index_select_cat(sources, indices):
+            is_proper_embed_dim = all(s.shape[-1] % 256 == 0 for s in sources)
+            is_float16 = all(s.dtype == torch.half for s in sources)
+            if is_proper_embed_dim and is_float16:
+                return _index_select_cat(sources, indices)
+            else:
+                return torch.cat([s[i.long()].flatten() for s, i in zip(sources, indices)], dim=0)
+
+
+        XFORMERS_AVAILABLE = True
+        warnings.warn("xFormers is available (Block)")
+    else:
+        warnings.warn("xFormers is disabled (Block)")
+        raise ImportError
+except ImportError:
+    XFORMERS_AVAILABLE = False
+    warnings.warn("xFormers is not available (Block)")
 
 class Block(nn.Module):
     def __init__(
