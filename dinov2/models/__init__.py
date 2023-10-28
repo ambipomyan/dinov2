@@ -16,7 +16,8 @@ def build_model(args, only_teacher=False, img_size=224):
     args.arch = args.arch.removesuffix("_memeff")
     if "vit" in args.arch:
         vit_kwargs = dict(
-            img_size=img_size,
+            #img_size=img_size,
+            img_size=518, # match dinov2 pre-trained models
             patch_size=args.patch_size,
             in_chans=args.in_chans,
             init_values=args.layerscale,

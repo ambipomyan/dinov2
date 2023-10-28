@@ -360,6 +360,22 @@ def vit_giant2(patch_size=16, **kwargs):
 ###########################
 # vits14 + multi-channels #
 ###########################
+def vit_small_CODEX(patch_size=16, in_chans=3, **kwargs):
+    model = DinoVisionTransformer(
+        patch_size=patch_size,
+        in_chans=in_chans,
+        embed_dim=384,
+        depth=12,
+        num_heads=12,
+        mlp_ratio=4,
+        block_fn=partial(Block, attn_class=MemEffAttention),
+        **kwargs,
+    )
+    return model
+
+###########################
+# vitb14 + multi-channels #
+###########################
 def vit_base_CODEX(patch_size=16, in_chans=3, **kwargs):
     model = DinoVisionTransformer(
         patch_size=patch_size,
