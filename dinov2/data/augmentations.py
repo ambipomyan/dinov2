@@ -101,9 +101,14 @@ class DataAugmentationDINO(object):
 ###########################################################
 # use MyTransform_v3 to replace transforms for PIL images #
 ###########################################################
+        '''
         self.global_transfo1 = transforms.Compose([MyTransform_v3(global_crops_size, 0.5, 0.8, 0.2, 1.0, 1.0)])
         self.global_transfo2 = transforms.Compose([MyTransform_v3(global_crops_size, 0.5, 0.8, 0.2, 0.1, 0.2)])
         self.local_transfo   = transforms.Compose([MyTransform_v3( local_crops_size, 0.5, 1.0, 1.0, 0.5, 1.0)])
+        '''
+        self.global_transfo1 = transforms.Compose([MyTransform_v3(global_crops_size, 0.5, 0.8, 0.2, 1.0, 0.0)])
+        self.global_transfo2 = transforms.Compose([MyTransform_v3(global_crops_size, 0.5, 0.8, 0.2, 0.1, 0.2)])
+        self.local_transfo   = transforms.Compose([MyTransform_v3( local_crops_size, 0.5, 0.8, 0.2, 0.5, 0.0)])
 
     def __call__(self, image):
         output = {}
