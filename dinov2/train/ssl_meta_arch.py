@@ -52,18 +52,21 @@ class SSLMetaArch(nn.Module):
 ###################################################
 # load weights from backbone and load blocks only #
 ###################################################
+## check
+            print(chkpt.keys())
+##################################################################
+# load weights from backbone and load weights from blocks #
+##################################################################
             chkpt_blks = {k : v for k, v in chkpt.items() if k.startswith('blocks')}
+            #chkpt_blks_raw = {k : v for k, v in chkpt.items() if k.startswith('blocks')}
 #### match the keys of blocks, if needed
-            #chkpt_blks_renamed = {}
-            #for k, v in chkpt_blks.items():
-            #    k2 = k.replace('blocks.', 'blocks.0.')
-            #    chkpt_blks_renamed[k2] = v
-#### ignore the unmatched keys
-            #student_backbone.load_state_dict(chkpt_blks_renamed)
-            #student_backbone.load_state_dict(chkpt_blks_renamed, strict=False)
+            #chkpt_blks = {}
+            #for k, v in chkpt_blks_raw.items():
+            #   k2 = k.replace('blocks.', 'blocks.0.')
+            #    chkpt_blks[k2] = v
+# load weights to state_dict
             #student_backbone.load_state_dict(chkpt_blks)
-#TODO: load weights to state_dict
-            student_backbone.load_state_dict(chkpt_blks, strict=False)
+            #student_backbone.load_state_dict(chkpt_blks, strict=False)
 ##################################################################
 # load weights from backbone and load weights from patch_embbeds #
 ##################################################################
@@ -76,6 +79,8 @@ class SSLMetaArch(nn.Module):
 #### cls_token
             new_state_dict['cls_token'] = chkpt_pembs['cls_token']
 #### pos_embed
+            new_state_dict['pos_embed'] = chkpt_pembs['pos_embed'] # match DINO pre-trained models
+            '''
             pos_embed_model_size = student_backbone.state_dict()['pos_embed'].size()
             pos_embed_state_dict_size = chkpt_pembs['pos_embed'].size()
             ## crop size is 224, which are smaller than 518
@@ -94,7 +99,8 @@ class SSLMetaArch(nn.Module):
             ## comput mean value
             ### 5x257x768 -> 1x257x768
             new_state_dict['pos_embed'] = torch.mean(tmp_3d, dim=0, keepdim=True)
-#### mask_token
+            '''
+#### mask_token - no mask token from dinov1
             new_state_dict['mask_token'] = chkpt_pembs['mask_token']
 #### patch_embed.proj.weight
             patch_embed_w_model_size = student_backbone.state_dict()['patch_embed.proj.weight'].size()
@@ -104,11 +110,18 @@ class SSLMetaArch(nn.Module):
             tmp_4d = torch.mean(chkpt_pembs['patch_embed.proj.weight'], dim=1, keepdim=True)
             ## duplicate via dim 1
             ### 768x1x14x14 -> 768x34x14x14
+            '''
             n_dim = patch_embed_w_model_size[1] - patch_embed_w_state_dict_size[1] # 37 - 3 = 34
             tmp_4d_rep = tmp_4d.repeat(1, n_dim, 1, 1)
             ## cat
             ### 768x3x14x14 + 768x34x14x14 -> 768x37x14x14
             new_state_dict['patch_embed.proj.weight'] = torch.cat((chkpt_pembs['patch_embed.proj.weight'], tmp_4d_rep), dim=1)
+            '''
+            ## distribute averaged weights
+            n_dim = patch_embed_w_model_size[1]
+            tmp_4d_rep = tmp_4d.repeat(1, n_dim, 1, 1)
+            ## duplicate
+            new_state_dict['patch_embed.proj.weight'] = tmp_4d_rep
 #### patch_embed.proj.bias
             new_state_dict['patch_embed.proj.bias'] = chkpt_pembs['patch_embed.proj.bias']
 #### norm.weight
@@ -118,11 +131,27 @@ class SSLMetaArch(nn.Module):
 ## check
             #print(student_backbone.state_dict()['blocks.0.norm1.weight'])
             #print(student_backbone.state_dict()['patch_embed.proj.weight'])
-            #student_backbone.load_state_dict(new_state_dict, strict=True)
-            student_backbone.load_state_dict(new_state_dict, strict=False)
+#### merge
+            out_state_dict = {**new_state_dict, **chkpt_blks}
+## check
+            print(out_state_dict.keys())
+#### load
+            student_backbone.load_state_dict(out_state_dict)
+            #student_backbone.load_state_dict(out_state_dict, strict=False) # if there is no cls token
 ## check
             #print(student_backbone.state_dict()['blocks.0.norm1.weight'])
             #print(student_backbone.state_dict()['patch_embed.proj.weight'])
+            '''
+#### freeze blocks
+            for k, v in student_backbone.named_parameters():
+                if k.startswith('blocks'):
+                    v.requires_grad = False
+## check- print the layers can be updated
+            for name, param in student_backbone.named_parameters():
+                if param.requires_grad:
+                    print(name)
+            '''
+
 
         self.embed_dim = embed_dim
         self.dino_out_dim = cfg.dino.head_n_prototypes

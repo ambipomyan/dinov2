@@ -61,6 +61,11 @@ For python-based LazyConfig, use "path.key=value".
 
 def build_optimizer(cfg, params_groups):
     return torch.optim.AdamW(params_groups, betas=(cfg.optim.adamw_beta1, cfg.optim.adamw_beta2))
+    '''
+    return torch.optim.AdamW(filter(lambda p: p.requires_grad, model.parameters()), \
+                             params_groups, \
+                             betas=(cfg.optim.adamw_beta1, cfg.optim.adamw_beta2))
+    '''
 
 
 def build_schedulers(cfg):
